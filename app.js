@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const routes = require('./routes/index')
 //const router = require('./router');
 
 const { PORT = 3000 } = process.env;
@@ -15,18 +16,13 @@ app.use(bodyParser.urlencoded({ extended: true })); // для приёма ве�
 
 app.use((req, res, next) => {
   req.user = {
-    _id: '643c736cd1059ce3382b32f3'
+    _id: '643edbc8fcfebda9ec36d3bd'
   };
 
   next();
 });
 
-app.use('/', require('./routes/cards'))
-app.use('/', require('./routes/users'));
-app.use('*', (req, res) => {
-  res.status(404).send({ message: 'Страница не найдена' })
-})
-
+app.use(routes);
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
