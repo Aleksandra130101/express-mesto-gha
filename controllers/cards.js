@@ -17,17 +17,17 @@ module.exports.getCards = (req, res) => {
 
 //Post создает карточку
 module.exports.createCard = (req, res) => {
-  const { name, link } = req.body;
 
-  Card.create({ name, link, owner: req.user._id })
+
+  Card.create({ name: req.body.name, link: req.body.link, owner: req.user._id })
     .then((card) => {
       res.send(card);
     })
     .catch((err) => {
-      if (err === 'ValidationError') {
-        res.status(ERROR_CODE).send({ message: 'При создании карточки переданы некорректные данные' })
+      if (err.name === 'ValidationError') {
+        res.status(ERROR_CODE).send({ message: 'При создании пользователя переданы некорректные данные' });
       } else {
-        res.status(ERROR_SERVER).send({ message: 'Произошла ошибка на сервере' })
+        res.status(ERROR_SERVER).send({ message: 'Произошла ошибка на сервере' });
       }
     })
 }
