@@ -43,7 +43,7 @@ module.exports.deleteCard = (req, res) => {
       }
     })
     .catch((err) => {
-      if (err === 'ValidationError') {
+      if (err.name === 'CastError') {
         res.status(ERROR_CODE).send({ message: 'id невалидный' })
       } else {
         res.status(ERROR_SERVER).send({ message: 'Произошла ошибка на сервере' })
