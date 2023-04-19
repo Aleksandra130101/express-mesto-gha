@@ -7,6 +7,7 @@ const Card = require('../models/card');
 // Get запрос возвращает карточки
 module.exports.getCards = (req, res) => {
   Card.find({})
+    .populate(['owner', 'likes'])
     .then((card) => {
       res.send({ data: card });
     })
@@ -18,14 +19,13 @@ module.exports.getCards = (req, res) => {
 //Post создает карточку
 module.exports.createCard = (req, res) => {
 
-
   Card.create({ name: req.body.name, link: req.body.link, owner: req.user._id })
     .then((card) => {
       res.send(card);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(ERROR_CODE).send({ message: 'При создании пользователя переданы некорректные данные' });
+        res.status(ERROR_CODE).send({ message: 'При создании карточки переданы некорректные данные' });
       } else {
         res.status(ERROR_SERVER).send({ message: 'Произошла ошибка на сервере' });
       }
@@ -61,12 +61,12 @@ module.exports.likeCard = (req, res) => {
       if (card) {
         res.send({ card: card.likes });
       } else {
-        res.status(ERROR_NOT_FOUND).send({message: 'Карточка по id не найдена'})
+        res.status(ERROR_NOT_FOUND).send({ message: 'Карточка по id не найдена' })
       }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(ERROR_CODE).send({message: 'Невалидный id'})
+        res.status(ERROR_CODE).send({ message: 'Невалидный id' })
       } else {
         res.status(ERROR_NOT_FOUND).send('Произошла ошибка на сервере')
       }
@@ -84,12 +84,12 @@ module.exports.deleteLike = (req, res) => {
       if (card) {
         res.send({ card: card.likes });
       } else {
-        res.status(ERROR_NOT_FOUND).send({message: 'Карточка по id не найдена'})
+        res.status(ERROR_NOT_FOUND).send({ message: 'Карточка по id не найдена' })
       }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(ERROR_CODE).send({message: 'Невалидный id'})
+        res.status(ERROR_CODE).send({ message: 'Невалидный id' })
       } else {
         res.status(ERROR_NOT_FOUND).send('Произошла ошибка на сервере')
       }
