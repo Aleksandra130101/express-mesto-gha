@@ -31,24 +31,21 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     select: false,
-  }
+  },
 });
 
 userSchema.methods.toJSON = function () {
   const object = this.toObject();
   delete object.password;
   return object;
-}
+};
 
 userSchema.statics.findUserByCredentials = function (email, password) {
-  //находим пользователя по почте
   return this.findOne({ email }).select('+password')
     .then((user) => {
-      //если user не нашли, то промис отклоняем
       if (!user) {
         return Promise.reject(new AuthorizeError('Неправильная почта'));
       }
-      //если email Нашли, то сравниваем хеши
       return bcrypt.compare(password, user.password)
         .then((matched) => {
           if (!matched) {
@@ -56,9 +53,8 @@ userSchema.statics.findUserByCredentials = function (email, password) {
           }
 
           return user;
-        })
-    })
-}
+        });
+    });
+};
 
 module.exports = mongoose.model('user', userSchema);
-

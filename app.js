@@ -6,9 +6,8 @@ const { celebrate, Joi, errors } = require('celebrate');
 
 const routes = require('./routes/index');
 const auth = require('./middlewares/auth');
-const handleError = require('./middlewares/error')
+const handleError = require('./middlewares/error');
 const { login, createUser } = require('./controllers/users');
-
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -27,9 +26,8 @@ app.post('/signin', celebrate({
     avatar: Joi.string().uri(),
     email: Joi.string().required().email(),
     password: Joi.string().required().min(8),
-  })
-}),
-login);
+  }),
+}), login);
 
 app.post('/signup', celebrate({
   body: Joi.object().keys({
@@ -38,10 +36,8 @@ app.post('/signup', celebrate({
     avatar: Joi.string().uri(),
     email: Joi.string().required().email(),
     password: Joi.string().required().min(8),
-  })
-}),
-createUser);
-
+  }),
+}), createUser);
 
 app.use(cookieParser());
 app.use(auth);
@@ -52,5 +48,5 @@ app.use(errors());
 app.use(handleError);
 
 app.listen(PORT, () => {
-  console.log(`App listening on port ${PORT}`);
+  console.log(`App listening on port ${PORT}`)
 })
