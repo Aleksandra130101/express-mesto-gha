@@ -12,7 +12,7 @@ const {
 router.get('/', getUsers);
 router.get('/me', getMe);
 router.get('/:userId', celebrate({
-  body: Joi.object().keys({
+  params: Joi.object().keys({
     userId: Joi.string().hex().required().length(24),
   })
 }),
