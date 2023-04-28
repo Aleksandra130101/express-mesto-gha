@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
+const AuthorizeError = require('../errors/authorizeError');
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -17,7 +18,8 @@ const userSchema = new mongoose.Schema({
   },
   avatar: {
     type: String,
-    default: 'https://w-dog.ru/wallpapers/9/14/461388963092987/gora-moran-snejk-river-grand-teton-nacionalnyj-park-vajoming-reka-snejk-grand-titon-otrazhenie.jpg',
+    default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
+    validate: validator.isURL,
   },
   email: {
     type: String,
@@ -32,19 +34,25 @@ const userSchema = new mongoose.Schema({
   }
 });
 
+userSchema.methods.toJSON = function () {
+  const object = this.toObject();
+  delete object.password;
+  return object;
+}
+
 userSchema.statics.findUserByCredentials = function (email, password) {
   //находим пользователя по почте
   return this.findOne({ email }).select('+password')
     .then((user) => {
       //если user не нашли, то промис отклоняем
       if (!user) {
-        return Promise.reject(new Error('Неправильная почта'));
+        return Promise.reject(new AuthorizeError('Неправильная почта'));
       }
       //если email Нашли, то сравниваем хеши
       return bcrypt.compare(password, user.password)
         .then((matched) => {
           if (!matched) {
-            return Promise.reject(new Error('Неправильный пароль'));
+            return Promise.reject(new AuthorizeError('Неправильный пароль'));
           }
 
           return user;

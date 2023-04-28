@@ -6,6 +6,7 @@ const { celebrate, Joi, errors } = require('celebrate');
 
 const routes = require('./routes/index');
 const auth = require('./middlewares/auth');
+const handleError = require('./middlewares/error')
 const { login, createUser } = require('./controllers/users');
 
 
@@ -21,6 +22,9 @@ app.use(bodyParser.urlencoded({ extended: true })); // для приёма ве�
 
 app.post('/signin', celebrate({
   body: Joi.object().keys({
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string().uri(),
     email: Joi.string().required().email(),
     password: Joi.string().required().min(8),
   })
@@ -29,6 +33,9 @@ login);
 
 app.post('/signup', celebrate({
   body: Joi.object().keys({
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string().uri(),
     email: Joi.string().required().email(),
     password: Joi.string().required().min(8),
   })
@@ -42,18 +49,7 @@ app.use(routes);
 
 app.use(errors());
 
-app.use((err, req, res, next) => {
-  const { statusCode = 500, message } = err;
-
-  res
-    .status(statusCode)
-    .send({
-      // проверяем статус и выставляем сообщение в зависимости от него
-      message: statusCode === 500
-        ? 'На сервере произошла ошибка'
-        : message
-    });
-});
+app.use(handleError);
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);

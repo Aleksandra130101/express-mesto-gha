@@ -1,6 +1,7 @@
 const NotFoundError = require('../errors/not-found-err');
 const SomethingWrongRequest = require('../errors/somethingWrongRequest');
-const ConflictError = require('../errors/conflictError');
+//const ConflictError = require('../errors/conflictError');
+const NoAccessError = require('../errors/noAccessError');
 
 const Card = require('../models/card');
 
@@ -35,17 +36,15 @@ module.exports.deleteCard = (req, res, next) => {
   Card.findById(req.params.cardId)
     .populate('owner')
     .then((card) => {
-      if (card.owner._id.toString() === req.user._id.toString()) {
+      if (!card) {
+        next(new NotFoundError('Карточка по _id не найдена!!!'));
+      } else if (card.owner._id.toString() === req.user._id.toString()) {
         Card.deleteOne(card)
-          .then((deletedCard) => {
-            if (deletedCard) {
-              res.send('Карточка удалена');
-            } else {
-              next(new NotFoundError('Карточка по _id не найдена!!!'));
-            }
+          .then(() => {
+              res.send({message: 'Карточка удалена'});
           });
       } else {
-        next(new ConflictError('Для удаления карточки нет доступа'));
+        next(new NoAccessError('Для удаления карточки нет доступа'));
       }
     })
     .catch((err) => {
