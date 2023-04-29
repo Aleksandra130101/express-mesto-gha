@@ -1,10 +1,11 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
 const NotFoundError = require('../errors/not-found-err');
 const SomethingWrongRequest = require('../errors/somethingWrongRequest');
 const ConflictError = require('../errors/conflictError');
 
 const User = require('../models/user');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 
 // Get запрос возвращает пользователей
 module.exports.getUsers = (req, res, next) => {
@@ -28,21 +29,27 @@ module.exports.getUserId = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         next(new SomethingWrongRequest('Передан некорретный ID!!!'));
-
       } else {
         next(err);
       }
     });
-}
+};
 
 // Создаем пользователя
 module.exports.createUser = (req, res, next) => {
   const { name, about, avatar } = req.body;
   bcrypt.hash(req.body.password, 10)
-    .then((hash) =>
-      User.create({ name, about, avatar, email: req.body.email, password: hash }))
+    .then((hash) => {
+      User.create({
+        name,
+        about,
+        avatar,
+        email: req.body.email,
+        password: hash,
+      });
+    })
     .then((user) => {
-      res.send(user)
+      res.send(user);
     })
     .catch((err) => {
       if (err.code === 11000) {
@@ -55,27 +62,26 @@ module.exports.createUser = (req, res, next) => {
     });
 };
 
-//login
+// login
 
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
 
   User.findUserByCredentials(email, password)
     .then((user) => {
-
       const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
       res.cookie('jwt', token, {
         maxAge: 3600000,
         httpOnly: true,
-      })
-      res.send({ message: 'Вы успешно вошли!', token })
+      });
+      res.send({ message: 'Вы успешно вошли!', token });
     })
     .catch((err) => {
       next(err);
-    })
-}
+    });
+};
 
-//Обновление профиля
+// Обновление профиля
 module.exports.updateProfile = (req, res, next) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(req.user._id, { name, about }, { runValidators: true, new: true })
@@ -93,9 +99,9 @@ module.exports.updateProfile = (req, res, next) => {
         next(err);
       }
     });
-}
+};
 
-//Обновление аватара
+// Обновление аватара
 module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
 
@@ -113,16 +119,14 @@ module.exports.updateAvatar = (req, res, next) => {
       } else {
         next(err);
       }
-    })
-}
+    });
+};
 
-//получение  информации от пользователе
+// получение  информации от пользователе
 module.exports.getMe = (req, res, next) => {
-
   User.findById(req.user._id)
     .then((user) => {
-      res.send(user)
+      res.send(user);
     })
     .catch(next);
-}
-
+};

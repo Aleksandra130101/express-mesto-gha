@@ -1,6 +1,6 @@
 const NotFoundError = require('../errors/not-found-err');
 const SomethingWrongRequest = require('../errors/somethingWrongRequest');
-//const ConflictError = require('../errors/conflictError');
+
 const NoAccessError = require('../errors/noAccessError');
 
 const Card = require('../models/card');
@@ -15,9 +15,8 @@ module.exports.getCards = (req, res, next) => {
     .catch(next);
 };
 
-//Post создает карточку
+// Post создает карточку
 module.exports.createCard = (req, res, next) => {
-
   Card.create({ name: req.body.name, link: req.body.link, owner: req.user._id })
     .then((card) => {
       res.status(201).send(card);
@@ -28,10 +27,10 @@ module.exports.createCard = (req, res, next) => {
       } else {
         next(err);
       }
-    })
-}
+    });
+};
 
-//Удаление карточки
+// Удаление карточки
 module.exports.deleteCard = (req, res, next) => {
   Card.findById(req.params.cardId)
     .populate('owner')
@@ -41,8 +40,9 @@ module.exports.deleteCard = (req, res, next) => {
       } else if (card.owner._id.toString() === req.user._id.toString()) {
         Card.deleteOne(card)
           .then(() => {
-              res.send({message: 'Карточка удалена'});
-          });
+            res.send({ message: 'Карточка удалена' });
+          })
+          .catch(next);
       } else {
         next(new NoAccessError('Для удаления карточки нет доступа'));
       }
@@ -53,12 +53,13 @@ module.exports.deleteCard = (req, res, next) => {
       } else {
         next(err);
       }
-    })
-}
+    });
+};
 
-//Постановка лайка на карточку
+// Постановка лайка на карточку
 module.exports.likeCard = (req, res, next) => {
-  Card.findByIdAndUpdate(req.params.cardId,
+  Card.findByIdAndUpdate(
+    req.params.cardId,
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
@@ -75,10 +76,10 @@ module.exports.likeCard = (req, res, next) => {
       } else {
         next(err);
       }
-    })
-}
+    });
+};
 
-//Удаление лайка с карточки
+// Удаление лайка с карточки
 module.exports.deleteLike = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
@@ -99,4 +100,4 @@ module.exports.deleteLike = (req, res, next) => {
         next(err);
       }
     });
-}
+};

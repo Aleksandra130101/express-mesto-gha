@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const validator = require('validator');
 const { celebrate, Joi, errors } = require('celebrate');
 
 const routes = require('./routes/index');
@@ -21,9 +22,6 @@ app.use(bodyParser.urlencoded({ extended: true })); // для приёма ве�
 
 app.post('/signin', celebrate({
   body: Joi.object().keys({
-    name: Joi.string().min(2).max(30),
-    about: Joi.string().min(2).max(30),
-    avatar: Joi.string().uri(),
     email: Joi.string().required().email(),
     password: Joi.string().required().min(8),
   }),
@@ -33,7 +31,12 @@ app.post('/signup', celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string().uri({ scheme: ["http", "https"] }),
+    avatar: Joi.string().custom((value) => {
+      if (!validator.isURL(value, { require_protocol: true })) {
+        throw new Error('Неправильный формат ссылки');
+      }
+      return value;
+    }, 'custom validation'),
     email: Joi.string().required().email(),
     password: Joi.string().required().min(8),
   }),
@@ -48,5 +51,5 @@ app.use(errors());
 app.use(handleError);
 
 app.listen(PORT, () => {
-  console.log(`App listening on port ${PORT}`)
-})
+  console.log(` App listening on port ${PORT} `);
+});
